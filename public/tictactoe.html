@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <link rel="stylesheet" href="tictactoe.css">
+    <meta charset="UTF-8" />
+    <title>Tic Tac Toe</title>
+</head>
+<body>
+    <div id = "menu-bar">
+        <a href = "tictactoe.html" id = 'tic-tac-toe-html'>Tic-Tac-Toe</a>
+        <a>Checkers</a>
+        <a>Chess</a>
+        <a href = "other.html" id ="other">Other</a>
+    </div>
+    <div id = "main">
+        <div id = "header">
+            <h3><solid>Tic-Tac-Toe</solid></h3>
+            <p>Click on a square to place your move.</p>
+            <!---
+            <div id = 'difficulty'>
+                <p>Difficulty: </p>
+                <button class = "difButt" id = "easyButt">Easy</button>
+                <button class = "difButt" id = "MediumButt">Medium</button>
+                <button class = "difButt" id = "HardButt">Hard</button>
+                <button class = "difButt" id = "easyButt">Impossible</button>
+            </div>
+            -->
+            <p id = "team">You are currently X's. You go first!</p>
+            <button id = "switchButton" onclick="switchFirst()" !disabled>Click to switch shapes (Resets game)</button>
+            <p id = "thinking"></p>
+            <p style="margin-top: 20%; font-weight: bold;">Results: </p>
+            <div id = results>
+                <p id = 'resultW'>Wins: 0</p>
+                <p id = 'resultL'>Loses: 0</p>
+                <p id = 'resultT'>Ties: 0</p>
+            </div>
+        </div>
+        <div id = 'Tic-Tac-Toe-Game'>
+            <canvas id = "myCanvas" width = "500" height = "500"></canvas>
+        </div>
+    </div>
+    
+    <script src="/socket.io/socket.io.js"></script>
+    <script> 
+
+        /*Create socket*/
+        var socket = io();
+        
+        /*Socket Joins*/
+        socket.on("connect", function()
+        {
+            socket.emit("join",);
+        });
+
+        //Canvas
+        var canvas = document.getElementById("myCanvas");
+        var ctx = canvas.getContext("2d");
+
+        var resultW = document.getElementById("resultW");
+        var resultL = document.getElementById("resultL");
+        var resultT = document.getElementById("resultT");
+
+        var team = document.getElementById("team");
+        var switchButton = document.getElementById("switchButton");
+        var thinking = document.getElementById("thinking");
+        var waiting = false;
+        var num = 0;
+
+        elemLeft = canvas.offsetLeft;
+        elemTop = canvas.offsetTop;
+        
+        var boardStartX = 50;
+        var boardStartY = 50;
+        var boardLength = 400;
+        var boardHeight = 400;
+
+        var Xsize = boardHeight/4;
+        var oRadius = boardHeight/8;
+
+        var wins = 0
+        var loses = 0
+        var ties = 0
+
+        var AIFirst = false;
+        
+        //Init all 9 squares in the form [[LeftX, RightX],[TopY, BottomY]]
+        var square1 = [[boardStartX, (boardStartX + boardLength/3)], [boardStartY, (boardStartY + boardHeight/3)]];
+        var square2 = [[boardStartX + boardLength/3, boardStartX + (2*(boardLength/3))],[boardStartY, boardStartY + boardHeight/3]];
+        var square3 = [[boardStartX + 2*(boardLength/3), boardStartX + boardLength],[boardStartY, boardStartY + boardHeight/3]];
+
+        var square4 = [[boardStartX, boardStartX + boardLength/3],[boardStartY + boardHeight/3,boardStartY + 2*(boardHeight/3)]];
+        var square5 = [[boardStartX + boardLength/3, boardStartX + (2*(boardLength/3))],[boardStartY+ boardHeight/3, boardStartY + 2*(boardHeight/3)]];
+        var square6 = [[boardStartX + 2*(boardLength/3), boardStartX + boardLength],[boardStartY+ boardHeight/3, boardStartY + 2*(boardHeight/3)]];
+
+        var square7 = [[boardStartX, boardStartX + boardLength/3],[boardStartY + 2*(boardHeight/3),boardStartY + boardHeight]];
+        var square8 = [[boardStartX + boardLength/3, boardStartX + (2*(boardLength/3))],[boardStartY + 2*(boardHeight/3), boardStartY + boardHeight]];
+        var square9 = [[boardStartX + 2*(boardLength/3), boardStartX + boardLength],[boardStartY + 2*(boardHeight/3), boardStartY + boardHeight]];
+
+        //Create Empty Board
+        var board = ['empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty'];
+
+        //Draw the initial board
+        drawBoard();
+       
+        //On a message from the server, set waiting to false, parse the message for the changed square. Change that square, then check to see if the game is over
+        socket.on('message', function(message)
+        {
+            setWaiting(false);
+            var message = JSON.parse(message);
+            var squareChanged = message.square;
+            
+            if(!AIFirst)
+                changeAISquareO(squareChanged);
+            else
+                changeAISquareX(squareChanged);
+
+            checkResult();
+        });
+
+        //Change square based off of AI
+        function changeAISquareX(square)
+        {
+            if(square == 0)
+            {
+                //result.innerHTML = 'In';
+                drawX(square1[0][0], square1[1][0]);
+                board[0] = 'X';
+            }
+            else if(square == 1)
+            {
+                //result.innerHTML = 'In';
+                drawX(square2[0][0], square2[1][0]);
+                board[1] = 'X';
+            }
+            else if(square == 2)
+            {
+                //result.innerHTML = 'In';
+                drawX(square3[0][0], square3[1][0]);
+                board[2] = 'X';
+            }
+            else if(square == 3)
+            {
+                //result.innerHTML = 'In';
+                drawX(square4[0][0], square4[1][0]);
+                board[3] = 'X';
+            }
+            else if(square == 4)
+            {
+                //result.innerHTML = 'In';
+                drawX(square5[0][0], square5[1][0]);
+                board[4] = 'X';
+            }
+            else if(square == 5)
+            {
+                //result.innerHTML = 'In';
+                drawX(square6[0][0], square6[1][0]);
+                board[5] = 'X';
+            }
+            else if(square == 6)
+            {
+                //result.innerHTML = 'In';
+                drawX(square7[0][0], square7[1][0]);
+                board[6] = 'X';
+            }
+            else if(square == 7)
+            {
+                //result.innerHTML = 'In';
+                drawX(square8[0][0], square8[1][0]);
+                board[7] = 'X';
+            }
+            else if(square == 8)
+            {
+                //result.innerHTML = 'In';
+                drawX(square9[0][0], square9[1][0]);
+                board[8] = 'X';
+            }
+        }
+        
+        function changeAISquareO(square)
+        {
+        
+            if(square == 0)
+            {
+                //result.innerHTML = 'In';
+                drawO(square1[0][0], square1[1][0]);
+                board[0] = 'O';
+            }
+            else if(square == 1)
+            {
+                //result.innerHTML = 'In';
+                drawO(square2[0][0], square2[1][0]);
+                board[1] = 'O';
+            }
+            else if(square == 2)
+            {
+                //result.innerHTML = 'In';
+                drawO(square3[0][0], square3[1][0]);
+                board[2] = 'O';
+            }
+            else if(square == 3)
+            {
+                //result.innerHTML = 'In';
+                drawO(square4[0][0], square4[1][0]);
+                board[3] = 'O';
+            }
+            else if(square == 4)
+            {
+                //result.innerHTML = 'In';
+                drawO(square5[0][0], square5[1][0]);
+                board[4] = 'O';
+            }
+            else if(square == 5)
+            {
+                //result.innerHTML = 'In';
+                drawO(square6[0][0], square6[1][0]);
+                board[5] = 'O';
+            }
+            else if(square == 6)
+            {
+                //result.innerHTML = 'In';
+                drawO(square7[0][0], square7[1][0]);
+                board[6] = 'O';
+            }
+            else if(square == 7)
+            {
+                //result.innerHTML = 'In';
+                drawO(square8[0][0], square8[1][0]);
+                board[7] = 'O';
+            }
+            else if(square == 8)
+            {
+                //result.innerHTML = 'In';
+                drawO(square9[0][0], square9[1][0]);
+                board[8] = 'O';
+            }
+        }
+        
+        //On click, add player's 'X', then call server to get AI's 'O'. 
+        canvas.addEventListener('click', function(event) { 
+            if(!waiting)
+            {
+                var x = event.clientX - elemLeft;
+                var y = event.clientY - elemTop;
+
+                if(!AIFirst)
+                {
+                
+                    if(x < boardStartX + boardLength/3 && x > boardStartX)
+                    {
+                        if(y < boardStartY + boardHeight/3 && y > boardStartY && board[0] == 'empty')
+                        {
+                            //square 1
+                            drawX(square1[0][0], square1[1][0]);
+                            board[0] = 'X';
+                            setWaiting(true);
+
+                        }
+                        else if(y < (boardHeight/3)*2 && y > boardStartY + boardHeight/3 && board[3] == 'empty')
+                        {
+                            //square 4
+                            drawX(square4[0][0], square4[1][0]);
+                            board[3] = 'X';
+                            setWaiting(true);
+
+                        }
+                        else if(y < boardHeight && y > boardStartY + 2*(boardHeight/3) && board[6] == 'empty')
+                        {
+                            //square 7
+                            drawX(square7[0][0], square7[1][0]);
+                            board[6] = 'X';
+                            setWaiting(true);
+
+                        }
+                    }
+                    else if(x < boardStartX + 2*(boardLength/3) && x > boardStartX + boardLength/3)
+                    {
+                        if(y < boardStartY + boardHeight/3 && y > boardStartY && board[1] == 'empty')
+                        {
+                            //square 2
+                            drawX(square2[0][0], square2[1][0]);
+                            board[1] = 'X';
+                            setWaiting(true);
+
+                        }
+                        else if(y < (boardHeight/3)*2 && y > boardStartY + boardHeight/3 && board[4] == 'empty')
+                        {
+                            //square 5
+                            drawX(square5[0][0], square5[1][0]);
+                            board[4] = 'X';
+                            setWaiting(true);
+
+                        }
+                        else if(y < boardHeight && y > boardStartY + 2*(boardHeight/3) && board[7] == 'empty')
+                        {
+                            //square 8
+                            drawX(square8[0][0], square8[1][0]);
+                            board[7] = 'X';
+                            setWaiting(true);
+
+                        }
+                    }
+                    else if(x < boardStartX + boardLength && x > boardStartX + 2*(boardLength/3))
+                    {
+                        if(y < boardStartY + boardHeight/3 && y > boardStartY && board[2] == 'empty')
+                        {
+                            //square 3
+                            drawX(square3[0][0], square3[1][0]);
+                            board[2] = 'X';
+                            setWaiting(true);
+
+                        }
+                        else if(y < (boardHeight/3)*2 && y > boardStartY + boardHeight/3 && board[5] == 'empty')
+                        {
+                            //square 6
+                            drawX(square6[0][0], square6[1][0]);
+                            board[5] = 'X';
+                            setWaiting(true);
+
+                        }
+                        else if(y < boardHeight && y > boardStartY + 2*(boardHeight/3) && board[8] == 'empty')
+                        {
+                            //square 9
+                            drawX(square9[0][0], square9[1][0]);
+                            board[8] = 'X';
+                            setWaiting(true);
+                        }
+                    }
+                }
+                else if(AIFirst)
+                {
+                    if(x < boardStartX + boardLength/3 && x > boardStartX)
+                    {
+                        if(y < boardStartY + boardHeight/3 && y > boardStartY && board[0] == 'empty')
+                        {
+                            //square 1
+                            drawO(square1[0][0], square1[1][0]);
+                            board[0] = 'O';
+                            setWaiting(true);
+
+                        }
+                        else if(y < (boardHeight/3)*2 && y > boardStartY + boardHeight/3 && board[3] == 'empty')
+                        {
+                            //square 4
+                            drawO(square4[0][0], square4[1][0]);
+                            board[3] = 'O';
+                            setWaiting(true);
+
+                        }
+                        else if(y < boardHeight && y > boardStartY + 2*(boardHeight/3) && board[6] == 'empty')
+                        {
+                            //square 7
+                            drawO(square7[0][0], square7[1][0]);
+                            board[6] = 'O';
+                            setWaiting(true);
+
+                        }
+                    }
+                    else if(x < boardStartX + 2*(boardLength/3) && x > boardStartX + boardLength/3)
+                    {
+                        if(y < boardStartY + boardHeight/3 && y > boardStartY && board[1] == 'empty')
+                        {
+                            //square 2
+                            drawO(square2[0][0], square2[1][0]);
+                            board[1] = 'O';
+                            setWaiting(true);
+                        }
+                        else if(y < (boardHeight/3)*2 && y > boardStartY + boardHeight/3 && board[4] == 'empty')
+                        {
+                            //square 5
+                            drawO(square5[0][0], square5[1][0]);
+                            board[4] = 'O';
+                            setWaiting(true);
+
+                        }
+                        else if(y < boardHeight && y > boardStartY + 2*(boardHeight/3) && board[7] == 'empty')
+                        {
+                            //square 8
+                            drawO(square8[0][0], square8[1][0]);
+                            board[7] = 'O';
+                            setWaiting(true);
+
+                        }
+                    }
+                    else if(x < boardStartX + boardLength && x > boardStartX + 2*(boardLength/3))
+                    {
+                        if(y < boardStartY + boardHeight/3 && y > boardStartY && board[2] == 'empty')
+                        {
+                            //square 3
+                            drawO(square3[0][0], square3[1][0]);
+                            board[2] = 'O';
+                            setWaiting(true);
+
+                        }
+                        else if(y < (boardHeight/3)*2 && y > boardStartY + boardHeight/3 && board[5] == 'empty')
+                        {
+                            //square 6
+                            drawO(square6[0][0], square6[1][0]);
+                            board[5] = 'O';
+                            setWaiting(true);
+
+                        }
+                        else if(y < boardHeight && y > boardStartY + 2*(boardHeight/3) && board[8] == 'empty')
+                        {
+                            //square 9
+                            drawO(square9[0][0], square9[1][0]);
+                            board[8] = 'O';
+                            setWaiting(true);
+                        }
+                    }
+                }
+                
+                //Check to see if new move won/tied game.
+                var gameOver = checkResult();
+
+                //AI's Turn- Done on server. Needs current gamestate (board[])
+                if(waiting && !gameOver)
+                    socket.emit("message",JSON.stringify({type:"AITurn", gamestate: board})); 
+                else if(gameOver)
+                    setWaiting(false);
+               
+            }
+        }, false);
+
+        //Check to see if win
+        function checkResult()
+        {
+            gameOver = false;
+            
+            if(board[0] != 'empty' && ((board[0] == board[1] && board[1] == board[2]) || (board[0] == board[3] && board[3] == board[6])))
+            {
+                if(!AIFirst)
+                {
+                    if(board[0] == 'X')
+                    {
+                        wins++;
+                        resultW.innerHTML = "Wins: " + wins;
+                    }
+                    else if(board[0] == 'O')
+                    {
+                        loses++;
+                        resultL.innerHTML = "Loses: " + loses;
+                    }
+                }
+                else
+                {
+                    if(board[0] == 'O')
+                    {
+                        wins++;
+                        resultW.innerHTML = "Wins: " + wins;
+                    }
+                    else if(board[0] == 'X')
+                    {
+                        loses++;
+                        resultL.innerHTML = "Loses: " + loses;
+                    }
+                }
+                gameOver = true;
+
+                resetGame(3000);
+                
+            }
+            else if(board[4] != 'empty' && ((board[3] == board[4] && board[4] == board[5]) || (board[1] == board[4] && board[4] == board[7]) || (board[2] == board[4] && board[4] == board[6]) || (board[0] == board[4] && board[4] == board[8])))
+            {
+                if(!AIFirst)
+                {
+                    if(board[4] == 'X')
+                    {
+                        wins++;
+                        resultW.innerHTML = "Wins: " + wins;
+                    }
+                    else if(board[4] == 'O')
+                    {
+                        loses++;
+                        resultL.innerHTML = "Loses: " + loses;
+                    }
+                }
+                else
+                {
+                    if(board[4] == 'O')
+                    {
+                        wins++;
+                        resultW.innerHTML = "Wins: " + wins;
+                    }
+                    else if(board[4] == 'X')
+                    {
+                        loses++;
+                        resultL.innerHTML = "Loses: " + loses;
+                    }
+                }
+
+                gameOver = true;
+                resetGame(3000);
+               
+            }
+            else if(board[8] != 'empty' && ((board[6] == board[7] && board[7] == board[8]) || (board[2] == board[5] && board[5] == board[8])))
+            {
+                if(!AIFirst)
+                {
+                    if(board[8] == 'X')
+                    {
+                        wins++;
+                        resultW.innerHTML = "Wins: " + wins;
+                    }
+                    else if(board[8] == 'O')
+                    {
+                        loses++;
+                        resultL.innerHTML = "Loses: " + loses;
+                    }
+                }
+                else
+                {
+                    if(board[8] == 'O')
+                    {
+                        wins++;
+                        resultW.innerHTML = "Wins: " + wins;
+                    }
+                    else if(board[8] == 'X')
+                    {
+                        loses++;
+                        resultL.innerHTML = "Loses: " + loses;
+                    }
+                }
+                
+                gameOver = true;
+                resetGame(3000);
+                
+            }
+            
+            else if(board[0] != 'empty' && board[1] != 'empty' && board[2] != 'empty' && board[3] != 'empty' && board[4] != 'empty' && board[5] != 'empty' && board[6] != 'empty' && board[7] != 'empty' && board[8] != 'empty')
+            {
+                ties++;
+                resultT.innerHTML = "Ties: "+ ties;
+                gameOver = true;
+                resetGame(3000);
+               
+            }
+
+            return gameOver;
+            
+        }
+        
+        //Reset game on win/loss/tie
+        function resetGame(timer)
+        {
+            setWaiting(true);
+            thinking.innerHTML = "Reseting game..."
+            //Show result for three seconds
+            setTimeout(function()
+            {
+                //Clear board, make new board
+                setWaiting(false);
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                drawBoard();
+                board = ['empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty'];
+            }, timer);
+        }
+        
+        //Draw a blank tic tac toe board
+        function drawBoard()
+        {
+            ctx.beginPath();
+            
+            ctx.strokeStyle = "white"
+            ctx.lineWidth = '4'
+
+            ctx.rect(square1[0][0], square1[1][0], boardLength/3, boardHeight/3);
+            ctx.stroke();
+
+            ctx.rect(square2[0][0], square2[1][0], boardLength/3, boardHeight/3);
+            ctx.stroke();
+
+            ctx.rect(square3[0][0], square3[1][0], boardLength/3, boardHeight/3);
+            ctx.stroke();
+
+            ctx.rect(square4[0][0], square4[1][0], boardLength/3, boardHeight/3);
+            ctx.stroke();
+
+            ctx.rect(square5[0][0], square5[1][0], boardLength/3, boardHeight/3);
+            ctx.stroke();
+
+            ctx.rect(square6[0][0], square6[1][0], boardLength/3, boardHeight/3);
+            ctx.stroke();
+
+            ctx.rect(square7[0][0], square7[1][0], boardLength/3, boardHeight/3);
+            ctx.stroke();
+
+            ctx.rect(square8[0][0], square8[1][0], boardLength/3, boardHeight/3);
+            ctx.stroke();
+
+            ctx.rect(square9[0][0], square9[1][0], boardLength/3, boardHeight/3);
+            ctx.stroke();
+
+            ctx.closePath();
+        }
+
+        //Draw an 'X'
+        function drawX(startX,startY)
+        {
+            var shiftR = (boardLength/3 - Xsize)/2;
+            var shiftD = (boardHeight/3 - Xsize)/2;
+            var X = startX + shiftR;
+            var Y = startY + shiftD;
+            var lineLength = Xsize;
+
+            ctx.beginPath();
+
+            ctx.strokeStyle = 'blue';
+
+            ctx.moveTo(X, Y);
+            ctx.lineTo(X + lineLength, Y + lineLength);
+            ctx.stroke();
+            
+            X += lineLength;
+            
+            ctx.moveTo(X, Y);
+
+            X -= lineLength;
+
+            ctx.lineTo(X, Y + lineLength);
+            ctx.stroke();
+
+            ctx.closePath();
+
+        }
+
+        //Draw an 'O'
+        function drawO(startX, startY)
+        {
+            var shiftR = boardLength/6
+            var shiftD = boardHeight/6
+
+            var X = startX + shiftR;
+            var Y = startY + shiftD;
+            var radius = oRadius;
+
+            ctx.beginPath();
+            ctx.strokeStyle = 'red'
+            ctx.arc(X,Y,radius,0,2*Math.PI)
+            ctx.stroke();
+            ctx.closePath();
+        }
+        
+        function switchFirst()
+        {
+            AIFirst = !AIFirst;
+            
+            if(AIFirst)
+            {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                drawBoard();
+                board = ['empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty'];
+                
+                team.innerHTML = "You are currently O's. You go second!"
+                setWaiting(true);
+                socket.emit("message",JSON.stringify({type:"AITurn", gamestate: board})); 
+            }
+            else
+            {
+                resetGame(100);
+                team.innerHTML = "You are currently X's. You go first!"
+            }
+
+        }
+        
+        function setWaiting(boolean)
+        {
+            
+            waiting = boolean;
+            if(waiting)
+            {
+                switchButton.disabled = true;
+                thinking.innerHTML = "Thinking..."
+            }
+            else
+            {
+                switchButton.disabled = false;
+                thinking.innerHTML = ""
+            }
+        }
+    </script>
+
+</body>
+</html>

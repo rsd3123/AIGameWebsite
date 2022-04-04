@@ -17,15 +17,15 @@
         <div id = "header">
             <h3><solid>Tic-Tac-Toe</solid></h3>
             <p>Click on a square to place your move.</p>
-            <!---
+           
             <div id = 'difficulty'>
-                <p>Difficulty: </p>
-                <button class = "difButt" id = "easyButt">Easy</button>
-                <button class = "difButt" id = "MediumButt">Medium</button>
-                <button class = "difButt" id = "HardButt">Hard</button>
-                <button class = "difButt" id = "easyButt">Impossible</button>
+                <p id = "currentDif">Difficulty: Impossible</p>
+                <button class = "difButt" id = "easyButt" onClick = changeDif(0)>Easy</button>
+                <button class = "difButt" id = "mediumButt" onClick = "changeDif(1)">Medium</button>
+                <button class = "difButt" id = "hardButt" onClick = "changeDif(2)">Hard</button>
+                <button class = "difButt" id = "impossibleButt" onClick = "changeDif(3)">Impossible</button>
             </div>
-            -->
+        
             <p id = "team">You are currently X's. You go first!</p>
             <button id = "switchButton" onclick="switchFirst()" !disabled>Click to switch shapes (Resets game)</button>
             <p id = "thinking"></p>
@@ -64,6 +64,13 @@
         var team = document.getElementById("team");
         var switchButton = document.getElementById("switchButton");
         var thinking = document.getElementById("thinking");
+
+        let easyButt = document.getElementById("easyButt");
+        let mediumButt = document.getElementById("mediumButt");
+        let hardButt = document.getElementById("hardButt");
+        let impossibleButt = document.getElementById("impossibleButt");
+        var currentDif = document.getElementById("currentDif")
+
         var waiting = false;
         var num = 0;
 
@@ -83,6 +90,8 @@
         var ties = 0
 
         var AIFirst = false;
+        var difficulty = "impossible";
+
         
         //Init all 9 squares in the form [[LeftX, RightX],[TopY, BottomY]]
         var square1 = [[boardStartX, (boardStartX + boardLength/3)], [boardStartY, (boardStartY + boardHeight/3)]];
@@ -103,6 +112,7 @@
         //Draw the initial board
         drawBoard();
        
+        changeDif(3);
         //On a message from the server, set waiting to false, parse the message for the changed square. Change that square, then check to see if the game is over
         socket.on('message', function(message)
         {
@@ -415,7 +425,7 @@
 
                 //AI's Turn- Done on server. Needs current gamestate (board[])
                 if(waiting && !gameOver)
-                    socket.emit("message",JSON.stringify({type:"AITurn", gamestate: board})); 
+                    socket.emit("message",JSON.stringify({type:"AITurn", gamestate: board, diff: difficulty})); 
                 else if(gameOver)
                     setWaiting(false);
                
@@ -653,7 +663,7 @@
                 
                 team.innerHTML = "You are currently O's. You go second!"
                 setWaiting(true);
-                socket.emit("message",JSON.stringify({type:"AITurn", gamestate: board})); 
+                socket.emit("message",JSON.stringify({type:"AITurn", gamestate: board, diff: difficulty})); 
             }
             else
             {
@@ -678,6 +688,64 @@
                 thinking.innerHTML = ""
             }
         }
+        
+        function changeDif(dif)
+        {
+            var currentDi = document.getElementById("currentDif");
+
+            /*
+            easyButt.style.backgroundColor = rgb(116, 113, 113);
+            easyButt.style.color = 'white';
+            easyButt.style.borderColor = rgb(71, 70, 70);
+        
+            mediumButt.style.backgroundColor = rgb(116, 113, 113);
+            mediumButt.style.color = 'white';
+            mediumButt.style.borderColor = rgb(71, 70, 70);
+            
+            hardButt.style.backgroundColor = rgb(116, 113, 113);
+            hardButt.style.color = 'white';
+            hardButt.style.borderColor = rgb(71, 70, 70);
+            
+            
+            impossibleButt.style.backgroundColor = rgb(116, 113, 113);
+            impossibleButt.style.color = 'white';
+            impossibleButt.style.borderColor = rgb(71, 70, 70);
+            */
+           
+            switch(dif)
+            {
+                case 0:
+                    
+                    //easyButt.style.backgroundColor = "white";
+                    //easyButt.style.color = "black";
+                    currentDi.innerHTML = "Difficulty: Easy";
+                    difficulty = "easy";
+                    break;
+                case 1:
+                   
+                    //mediumButt.style.backgroundColor = "white";
+                    //mediumButt.style.color = "black";
+                    currentDif.innerHTML = "Difficulty: Medium";
+                    difficulty = "medium";
+                    break;
+                case 2:
+                   
+                    //hardButt.style.backgroundColor = "white";
+                    //hardButt.style.color = "black";
+                    currentDif.innerHTML = "Difficulty: Hard";
+                    difficulty = "hard";
+                    break;
+                case 3:
+            
+                    //impossibleButt.style.backgroundColor = "white";
+                    //impossibleButt.style.color = "black";
+                    currentDif.innerHTML = "Difficulty: Impossible";
+                    difficulty = "impossible";
+                    break;
+            }
+        }
+
+    
     </script>
 
 </body>

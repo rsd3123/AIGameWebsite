@@ -40,12 +40,12 @@ io.on('connection', (socket) => {
             {
                 console.log(message.type);
                 console.log(message.gamestate);
-
+                console.log(message.diff);
                 //Python make AI move
                 let options = {
                     mode: 'text',
                     pythonOptions: ['-u'], // get print results in real-time
-                    args: [message.gamestate] //An argument which can be accessed in the script using sys.argv[1]
+                    args: [message.gamestate, message.diff] //An argument which can be accessed in the script using sys.argv[1]
                 };
                 PythonShell.run('tttSearchAgent.py', options, function (err, result){
                     if (err) throw err;

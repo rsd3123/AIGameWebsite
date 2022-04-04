@@ -73,6 +73,18 @@ a:active {
   border-color: white;
 }
 
+.difButt{
+  background-color: rgb(116, 113, 113);
+  color: white;
+  border-color: rgb(71, 70, 70);
+}
+
+.difButt:hover{
+  background-color: rgb(255, 255, 255);
+  color: rgb(0, 0, 0);
+  border-color: white;
+}
+
 #Tic-Tac-Toe-Game {
   display: flex;
   flex-direction: row;

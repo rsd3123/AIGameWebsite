@@ -5,9 +5,14 @@ Rudy DeSanti
 March 31, 2022
 Return what square on the board (numbered 0-8) to place an 'O' in.
 '''
+#Make AI chose a random path on tie
 
 #Implement number of moves into score
+import math
+from random import Random, random, randrange
 import sys
+
+
 
 def Max(board):
 
@@ -26,7 +31,12 @@ def Max(board):
     currentBoard = None
     for action in actions:
         temp = Min(action)
-        if currentHighest == None or temp['score'] > currentHighest:
+        mistakeMade = False
+        currentChance = random()
+        if chanceToNotMakeMistake  < currentChance:
+            mistakeMade = True
+
+        if currentHighest == None or (temp['score'] > currentHighest and not mistakeMade):
             currentHighest = temp['score']
             currentAction = temp['square']
             currentBoard = temp['board']
@@ -123,8 +133,19 @@ def scoreBoard(board):
         return None
         
 def main():
+    global chanceToNotMakeMistake
     argument = sys.argv[1]
+    difficulty = sys.argv[2]
 
+    if difficulty == "impossible":
+        chanceToNotMakeMistake = 1
+    elif difficulty == "hard":
+        chanceToNotMakeMistake = .75
+    elif difficulty == "medium":
+        chanceToNotMakeMistake = .50
+    elif difficulty == "easy":
+        chanceToNotMakeMistake = .25
+        
     #Split up argument string into array
     board = argument.split(',')
 

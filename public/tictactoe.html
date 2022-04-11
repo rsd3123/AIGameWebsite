@@ -13,6 +13,9 @@
         <a>Chess</a>
         <a href = "other.html" id ="other">Other</a>
     </div>
+    <div id = "leftSide"> 
+        <p> hi</p>
+    </div>
     <div id = "main">
         <div id = "header">
             <h3><solid>Tic-Tac-Toe</solid></h3>
@@ -28,7 +31,7 @@
         
             <p id = "team">You are currently X's. You go first!</p>
             <button id = "switchButton" onclick="switchFirst()" !disabled>Click to switch shapes (Resets game)</button>
-            <p id = "thinking"></p>
+            
             <p style="margin-top: 20%; font-weight: bold;">Results: </p>
             <div id = results>
                 <p id = 'resultW'>Wins: 0</p>
@@ -37,10 +40,14 @@
             </div>
         </div>
         <div id = 'Tic-Tac-Toe-Game'>
+            
             <canvas id = "myCanvas" width = "500" height = "500"></canvas>
+            <p id = "thinking"></p>
         </div>
     </div>
-    
+    <div id = "rightSide">
+
+    </div>
     <script src="/socket.io/socket.io.js"></script>
     <script> 
 
@@ -425,7 +432,7 @@
 
                 //AI's Turn- Done on server. Needs current gamestate (board[])
                 if(waiting && !gameOver)
-                    socket.emit("message",JSON.stringify({type:"AITurn", gamestate: board, diff: difficulty})); 
+                    socket.emit("message",JSON.stringify({type:"AITurn", gamestate: board, diff: difficulty, AIFirst: AIFirst})); 
                 else if(gameOver)
                     setWaiting(false);
                
@@ -563,6 +570,12 @@
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 drawBoard();
                 board = ['empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty', 'empty'];
+                if(AIFirst)
+                {
+                    setWaiting(true);
+                    thinking.innerHTML = "Thinking...";
+                    socket.emit("message",JSON.stringify({type:"AITurn", gamestate: board, diff: difficulty, AIFirst: AIFirst}));
+                }
             }, timer);
         }
         
@@ -663,11 +676,11 @@
                 
                 team.innerHTML = "You are currently O's. You go second!"
                 setWaiting(true);
-                socket.emit("message",JSON.stringify({type:"AITurn", gamestate: board, diff: difficulty})); 
+                socket.emit("message",JSON.stringify({type:"AITurn", gamestate: board, diff: difficulty, AIFirst: AIFirst})); 
             }
             else
             {
-                resetGame(100);
+                resetGame(1000);
                 team.innerHTML = "You are currently X's. You go first!"
             }
 
@@ -711,7 +724,7 @@
             impossibleButt.style.color = 'white';
             impossibleButt.style.borderColor = rgb(71, 70, 70);
             */
-           
+
             switch(dif)
             {
                 case 0:

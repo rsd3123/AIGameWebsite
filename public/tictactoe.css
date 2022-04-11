@@ -1,5 +1,8 @@
 body {
   background-color: rgb(68, 68, 66);
+  flex-direction: row;
+ 
+  
 }
 h3{
   
@@ -87,13 +90,35 @@ a:active {
 
 #Tic-Tac-Toe-Game {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
+}
+
+#thinking{
+  padding-left: 40%;
 }
 
 #results{
   display: flex;
   flex-direction: column;
-  padding-top: 1px;
+  padding: 0%;
+  margin: 0%;
   padding-left: 10%;
+}
+
+#leftSide{
+  background-color:red;
+  color: rgb(255, 0, 0);
+  top:0;
+  left:0;
+  width: 200px;
+  height:100%;
+}
+
+#rightSide{
+  background-color:red;
+  top:0;
+  left:0;
+  width: 10%;
+  height:100%;
 }
 

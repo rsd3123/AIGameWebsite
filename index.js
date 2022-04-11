@@ -45,7 +45,7 @@ io.on('connection', (socket) => {
                 let options = {
                     mode: 'text',
                     pythonOptions: ['-u'], // get print results in real-time
-                    args: [message.gamestate, message.diff] //An argument which can be accessed in the script using sys.argv[1]
+                    args: [message.gamestate, message.diff, message.AIFirst] //An argument which can be accessed in the script using sys.argv[1]
                 };
                 PythonShell.run('tttSearchAgent.py', options, function (err, result){
                     if (err) throw err;

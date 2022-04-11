@@ -11,8 +11,7 @@ Return what square on the board (numbered 0-8) to place an 'O' in.
 import math
 from random import Random, random, randrange
 import sys
-
-
+import random as rand
 
 def Max(board):
 
@@ -21,7 +20,10 @@ def Max(board):
 
     #Base Case
     #If action is null, score is not none, then leaf
-    score = scoreBoard(board['board'])
+    if AIFirst == "true":
+        score = scoreBoardX(board['board'])
+    else:
+        score = scoreBoardO(board['board'])
     if not actions or score != None:
         return {'board': board['board'], 'square':board['square'], 'score': score}
 
@@ -29,6 +31,7 @@ def Max(board):
     currentHighest = None
     currentAction = None 
     currentBoard = None
+    best = []
     for action in actions:
         temp = Min(action)
         mistakeMade = False
@@ -40,7 +43,18 @@ def Max(board):
             currentHighest = temp['score']
             currentAction = temp['square']
             currentBoard = temp['board']
-    
+        elif temp['score'] == currentHighest:
+            #50% chance of taking a path thats just as good- get rid of repitition
+            best.append(temp)
+    '''
+    if best and firstTurn and AIFirst:
+        temp = rand.choice(best)
+        currentHighest = temp['score']
+        currentAction = temp['square']
+        currentBoard = temp['board']
+        
+    firstTurn = False
+    '''
     return {'board':currentBoard, 'square':currentAction, 'score':currentHighest}
         
 def Min(board):
@@ -50,7 +64,10 @@ def Min(board):
 
     #Base Case
     #If action is null, score
-    score = scoreBoard(board['board'])
+    if AIFirst == 'true':
+        score = scoreBoardX(board['board'])
+    else:
+        score = scoreBoardO(board['board'])
     if not actions or score != None:
         return {'board': board['board'], 'square':board['square'], 'score': score}
 
@@ -75,7 +92,10 @@ def getValidMovesMax(board):
         if board['board'][i] == 'empty':
             newBoard = board['board'][:]
             
-            newBoard[i] = "O"
+            if AIFirst == 'true':
+                newBoard[i] = 'X'
+            else:
+                newBoard[i] = "O"
             if board['square'] == None:
                 actions.append({'board': newBoard, 'square':i, 'score': None})
             else:
@@ -90,7 +110,10 @@ def getValidMovesMin(board):
         if board['board'][i] == 'empty':
             newBoard = board['board'][:]
             
-            newBoard[i] = "X"
+            if AIFirst == 'true':
+                newBoard[i] = 'O'
+            else:
+                newBoard[i] = "X"
             if board['square'] == None:
                 actions.append({'board': newBoard, 'square':i, 'score': None})
             else:
@@ -98,7 +121,7 @@ def getValidMovesMin(board):
 
     return actions
 
-def scoreBoard(board):
+def scoreBoardO(board):
     
     numOfEmptySpaces = 0
     for i in range(len(board)):
@@ -132,13 +155,53 @@ def scoreBoard(board):
     else:
         return None
         
+def scoreBoardX(board):
+    
+    numOfEmptySpaces = 0
+    for i in range(len(board)):
+        if(board[i] == 'empty'):
+            numOfEmptySpaces = numOfEmptySpaces + 1
+    
+    #Return 1 for win, -1 for loss, 0 for tie
+    if board[0] != 'empty' and ((board[0] == board[1] and board[1] == board[2]) or (board[0] == board[3] and board[3] == board[6])):
+        if(board[0] == 'O'):
+           return -1
+        elif(board[0] == 'X'):
+            return 1 + numOfEmptySpaces
+         
+    elif board[4] != 'empty' and ((board[3] == board[4] and board[4] == board[5]) or (board[1] == board[4] and board[4] == board[7]) or (board[2] == board[4] and board[4] == board[6]) or (board[0] == board[4] and board[4] == board[8])):
+        if(board[4] == 'O'):
+            return -1
+        elif(board[4] == 'X'):
+           return 1 + numOfEmptySpaces
+    
+    elif board[8] != 'empty' and ((board[6] == board[7] and board[7] == board[8]) or (board[2] == board[5] and board[5] == board[8])):
+        if(board[8] == 'O'):
+            return -1
+        elif(board[8] == 'X'):
+            return 1 + numOfEmptySpaces
+            
+    #Board full, no one wins
+    elif board[0] != 'empty' and board[1] != 'empty' and board[2] != 'empty' and board[3] != 'empty' and board[4] != 'empty' and board[5] != 'empty' and board[6] != 'empty' and board[7] != 'empty' and board[8] != 'empty':
+        return 0
+    
+    #If not anything
+    else:
+        return None
+
 def main():
     global chanceToNotMakeMistake
     argument = sys.argv[1]
     difficulty = sys.argv[2]
 
+    global AIFirst
+    AIFirst = sys.argv[3]
+
+    global firstTurn
+    firstTurn = True
+    
     if difficulty == "impossible":
-        chanceToNotMakeMistake = 1
+        chanceToNotMakeMistake = 1.1
     elif difficulty == "hard":
         chanceToNotMakeMistake = .75
     elif difficulty == "medium":
